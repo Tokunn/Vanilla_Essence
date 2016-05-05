@@ -10,6 +10,19 @@ from multiprocessing import Process, Queue
 import socket
 from contextlib import closing
 
+class MediatorNode(object):
+    """ Thread Infomation """
+    def __init__(self, threinfo):
+        self.topic = threinfo.topic
+        self.ipaddr = threinfo.ipaddr
+        self.port = threinfo.port
+        self.queue = Queue()
+        self.process = Process(target=mediator_thread, args=(threinfo, queue,))
+    def start(self):
+        """ Make new thread """
+        self.process.start()
+
+
 class ThreadInfo(object):
     """ Thread Infomation """
     def __init__(self, topic, ipaddr, port):
