@@ -6,132 +6,67 @@ Vanilla Essence Main Program
 H28 May 4
 """
 
-from multiprocessing import Process, Queue
 import socket
 from contextlib import closing
 
-class MediatorNode(object):
-    """ Thread Infomation """
-    def __init__(self, threinfo):
-        self.topic = threinfo.topic
-        self.ipaddr = threinfo.ipaddr
-        self.port = threinfo.port
-        self.queue = Queue()
-        self.process = Process(target=mediator_thread, args=(threinfo, queue,))
-    def start(self):
-        """ Make new thread """
-        self.process.start()
-
-
-class ThreadInfo(object):
-    """ Thread Infomation """
-    def __init__(self, topic, ipaddr, port):
-        self.topic = topic
-        self.ipaddr = ipaddr
-        self.port = port
-    def get_topic(self):
-        """ get topic """
-        return self.topic
-    def get_ipaddr(self):
-        """ get ipaddr """
-        return self.ipaddr
-    def get_port(self):
-        """ get port """
-        return self.port
-
-class NodeInfo(object):
-    """ Node Information """
-    def __init__(self, ipaddr, port):
-        self.ipaddr = ipaddr
-        self.port = port
-    def get_ipaddr(self):
-        """ get ipaddr """
-        return self.ipaddr
-    def get_port(self):
-        """ get port """
-        return self.port
-
-
-def mediator_thread(threinfo, nodeque):
-    """ Mediator Thread """
-    print("Start {}".format(threinfo.topic))
-    # Make subscriber node list
-    sub_node_list = []
-
-    # Make socket
-    medi_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-    with closing(medi_sock):
-        medi_sock.bind((threinfo.ipaddr, threinfo.port))
-
-        # Mediator main loop
-        while True:
-            # recive UDP
-            b_recvdata = medi_sock.recv(4096)
-
-            # Check new subscriber node
-            while True:
-                if nodeque.empty():
-                    break
-                else:
-                    new_sub = nodeque.get_nowait()
-                    sub_node_list.append(new_sub)
-
-            # Send to each sub node
-            for sub_node in sub_node_list:
-                medi_sock.sendto(b_recvdata, (sub_node.ipaddr, sub_node.port))
-                print("{}:{} {}".format(
-                    sub_node.ipaddr, sub_node.port, b_recvdata.decode()))
-
-    return
+import medthre
 
 
 def main():
     """ main function """
 
+    print("[DEBUG] [main] Starting Vanilla Essence ...")
+
     topic_list = {}
 
-    # Make Debug Topic TODO it can be function
-    debug_queue = Queue()
-    debug_threadinfo = ThreadInfo('/debug', '127.0.0.1', 11312) # TODO Ctrl topic port
-    debug_process = Process(target=mediator_thread, args=(debug_threadinfo, debug_queue,))
-    debug_process.start()
-    topic_list[debug_threadinfo.topic] = debug_threadinfo # Register topic thread info
+    #debug_queue = Queue()
+    #debug_threadinfo = ThreadInfo('/debug', '127.0.0.1', 11312) # TODO Ctrl topic port
+    #debug_process = Process(target=mediator_thread, args=(debug_threadinfo, debug_queue,))
+    #debug_process.start()
+    #topic_list[debug_threadinfo.topic] = debug_threadinfo # Register topic thread info
+
+    # Make /debug Topic Thread
+    topic_list['/debug'] = medthre.MediatorThread('/debug')
+    topic_list['/debug'].start()
 
     # TCP listen
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    port = 11311
     bufsize = 4096
 
-    sock.bind(('127.0.0.1', 11311))
+    sock.bind(('127.0.0.1', port))
     sock.listen(10)
 
     # Main Loop
-    #while True: TODO while 
-    # Recive Control
-    conn, address = sock.accept()
+    while True:
+        # Recive ControlData
+        print("[DEBUG] [main] Waiting TCP connection on {} ...".format(port))
+        conn, address = sock.accept()
 
-    ctrl_msg = conn.recv(bufsize).decode()
-    ctrl_msg = "SUB:/debug" # TODO test
+        ctrl_msg = conn.recv(bufsize).decode()
 
-    # Return Thread Information
-    rcv_topic_name = ctrl_msg[4:]
-    print("RCV TOPIC : {}".format(rcv_topic_name))
-    if not rcv_topic_name in topic_list:
-        print("New Topic")
-        node_queue = Queue()
-        threadinfo = ThreadInfo(rcv_topic_name, '127.0.0.1', 11312)
-        # TODO must make process list (follow process)
-        nw_process = Process(target=mediator_thread, args=(threadinfo, node_queue,))
-        nw_process.start()
-        topic_list[threadinfo.topic] = threadinfo
-    # Register Subscriber
-    rcv_position = ctrl_msg[:2]
-    if rcv_position == "SUB":
-        pass # TODO send node info
+        # Return Thread Information
+        rcv_topic_name = ctrl_msg[4:-1]
+        print("[DEBUG] [main] RCV REQUEST : {}".format(rcv_topic_name))
+        if not rcv_topic_name in topic_list:
+            print("New Topic")
+            topic_list[rcv_topic_name] = medthre.MediatorThread(rcv_topic_name)
+            topic_list[rcv_topic_name].start()
+            #node_queue = Queue()
+            #threadinfo = ThreadInfo(rcv_topic_name, '127.0.0.1', 11312)
+            ## TODO must make process list (follow process)
+            #nw_process = Process(target=mediator_thread, args=(threadinfo, node_queue,))
+            #nw_process.start()
+            #topic_list[threadinfo.topic] = threadinfo
+        # Register Subscriber
+        rcv_nodetype = ctrl_msg[:3]
+        if rcv_nodetype == "SUB":
+            topic_list[rcv_topic_name].set_sub('127.0.0.1', 11312)
 
-    demand_tpc = topic_list[rcv_topic_name]
-    ret_msg = "RET:{}:{}".format(demand_tpc.ipaddr, demand_tpc.port)
-    conn.send(ret_msg.encode())
+        #demand_tpc = topic_list[rcv_topic_name]
+        ret_msg = "RET:{}:{}".format(topic_list[rcv_topic_name].ipaddr, topic_list[rcv_topic_name].port)
+        conn.send(ret_msg.encode())
+        #conn.close()
     sock.close()
 
 
