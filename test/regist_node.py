@@ -28,7 +28,8 @@ def udp_send_thread(srv_host, srv_port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     test_print("Connect Thread Server")
     with closing(sock):
-        sock.sendto("test strings".encode(), (srv_host, srv_port))
+        for i in range(5):
+            sock.sendto("test strings {}".format(i).encode(), (srv_host, srv_port))
 
 #----- main() -----#
 def main():
@@ -59,8 +60,9 @@ def main():
     test_print("Listen UDP ...")
     with closing(sock):
         sock.bind((host, port+10))
-        recv_msg = sock.recv(4096)
-        print(recv_msg)
+        for i in range(5):
+            recv_msg = sock.recv(4096).decode()
+            test_print("{} '{}'".format(i, recv_msg))
 
 
 
