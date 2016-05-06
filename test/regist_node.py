@@ -40,6 +40,7 @@ def main():
     test_print("Connnect Main Server")
     with closing(sock):
         sock.connect((host, port))
+        self_addr = sock.getsockname()
         sock.send(msg.encode())
         recv_msg = sock.recv(4096).decode()
         test_print(recv_msg)
@@ -59,7 +60,7 @@ def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     test_print("Listen UDP ...")
     with closing(sock):
-        sock.bind((host, port+10))
+        sock.bind(self_addr)
         for i in range(5):
             recv_msg = sock.recv(4096).decode()
             test_print("{} '{}'".format(i, recv_msg))

@@ -25,19 +25,20 @@ def main():
 
     # TCP listen
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    port = 11311
+    main_ip = '127.0.0.1'
+    main_port = 11311
     bufsize = 4096
 
-    sock.bind(('127.0.0.1', port))
+    sock.bind((main_ip, main_port))
     sock.listen(10)
 
     # Main Loop
     while True:
         # Recive ControlData
-        print("[DEBUG] [main] Waiting TCP connection on {} ...".format(port))
-        conn, address = sock.accept()
+        print("[DEBUG] [main] Waiting TCP connection on {}:{} ...".format(main_ip, main_port))
+        node_conn, node_addr = sock.accept()
 
-        ctrl_msg = conn.recv(bufsize).decode()
+        ctrl_msg = node_conn.recv(bufsize).decode()
 
         # Return Thread Information
         rcv_topic_name = ctrl_msg[4:]
@@ -49,10 +50,10 @@ def main():
             # Register Subscriber
         rcv_nodetype = ctrl_msg[:3]
         if rcv_nodetype == "SUB":
-            topic_list[rcv_topic_name].set_sub('127.0.0.1', 11311+10)
+            topic_list[rcv_topic_name].set_sub(node_addr)
 
         ret_msg = "RET:{}:{}".format(topic_list[rcv_topic_name].ipaddr, topic_list[rcv_topic_name].port)
-        conn.send(ret_msg.encode())
+        node_conn.send(ret_msg.encode())
         #conn.close()
     sock.close()
 

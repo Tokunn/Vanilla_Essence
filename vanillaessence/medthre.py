@@ -90,9 +90,9 @@ class MediatorThread(object):
     def start(self):
         """ Make new thread """
         self.__process.start()
-    def set_sub(self, sub_ipaddr, sub_port):
+    def set_sub(self, sub_addr):
         """ Set Subscriber to thread """
-        nodeinfo = NodeInfo(sub_ipaddr, sub_port)
+        nodeinfo = NodeInfo(sub_addr[0], sub_addr[1])
         self.__queue.put(nodeinfo)
 
 
