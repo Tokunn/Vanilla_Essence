@@ -65,12 +65,14 @@ def mediator_thread(threinfo, nodeque):
                 else:
                     new_sub = nodeque.get_nowait()
                     sub_node_list.append(new_sub)
-                    print("[DEBUG] [mediator_thread] NEW SUB: {}".format(new_sub))
+                    tmp = "{}:{}".format(new_sub.ipaddr, new_sub.port)
+                    print("[DEBUG] [mediator_thread] NEW SUB:" + tmp)
 
             # Send to each sub node
             for sub_node in sub_node_list:
+                # TODO send udp
                 medi_sock.sendto(b_recvdata, (sub_node.ipaddr, sub_node.port))
-                print("[DEBUG] [mediator_thread]  {}:{} {}".format(
+                print("[DEBUG] [mediator_thread] SEND {}:{} {}".format(
                     sub_node.ipaddr, sub_node.port, b_recvdata.decode()))
 
     return
@@ -81,7 +83,7 @@ class MediatorThread(object):
     def __init__(self, topic):
         self.topic = topic
         self.ipaddr = '127.0.0.1' # TODO
-        self.port = 11321 # TODO
+        self.port = 11325 # TODO
         self.__queue = Queue()
         threinfo = ThreadInfo(self.topic, self.ipaddr, self.port)
         self.__process = Process(target=mediator_thread, args=(threinfo, self.__queue,))
