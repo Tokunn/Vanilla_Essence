@@ -97,17 +97,3 @@ class MediatorThread(object):
         """ Set Subscriber to thread """
         nodeinfo = NodeInfo(sub_addr[0], sub_addr[1])
         self.__queue.put(nodeinfo)
-
-
-#----- main() -----#
-def main():
-    """ main """
-    print("Hello, world!")
-
-
-if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("\nCtrl+C -> END")
-
