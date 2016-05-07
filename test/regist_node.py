@@ -13,20 +13,14 @@ import time
 from contextlib import closing
 from multiprocessing import Process
 
-sys.path.append('../vanillaessence')
-import logprint
-
-host = "127.0.0.1"
-port = 11311
-
-msg = "SUB:/sensor_value"
-
-startup_time = time.time()
+STARTUP_TIME = time.time()
 
 def uptime():
-    return str(time.time() - startup_time)[:8]
+    """ uptime """
+    return str(time.time() - STARTUP_TIME)[:8]
 
 def test_print(strings):
+    """ print """
     print("[{}] [TEST] {}".format(uptime(), strings))
 
 def udp_send_thread(srv_host, srv_port):
@@ -45,13 +39,16 @@ def udp_send_thread(srv_host, srv_port):
 
 def regist_node(msg):
     """ Regist Node and Get Topic Addr """
+    host = "127.0.0.1"
+    port = 11311
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     test_print("Connnect Main Server")
     with closing(sock):
         try:
             sock.connect((host, port))
         except ConnectionRefusedError:
-            sys.exit("\033[01m\033[91m[ERROR] Can't connect TCP Server\n[ERROR] TCP Server is not open\033[0m")
+            sys.exit("\033[01m\033[91m[ERROR] Can't connect TCP Server\n \
+            [ERROR] TCP Server is not open\033[0m")
         self_addr = sock.getsockname()
         test_print("OWN ADDR {}".format(self_addr))
         sock.send(msg.encode())
@@ -79,6 +76,7 @@ def recive_udp(self_addr):
 
 
 def main():
+    """ main """
     test_print("StartTesting ...")
 
     argv = sys.argv
@@ -86,23 +84,24 @@ def main():
 
     if argc > 1:
         for opt in argv:
-            if (opt == '-h'):
+            if opt == '-h':
                 print("HELP  --- OPTION")
                 print("-p UDP Publisher")
                 print("-s UDP Subscriber")
-            elif (opt == '-p'):
+            elif opt == '-p':
                 print("UDP Publisher")
                 msg = "PUB:/debug"
                 server_host, server_port, self_addr = regist_node(msg)
                 process = Process(target=udp_send_thread, args=(server_host, server_port,))
                 process.start()
-            elif (opt == '-s'):
+            elif opt == '-s':
                 print("UDP Subscriber")
                 msg = "SUB:/debug"
                 server_host, server_port, self_addr = regist_node(msg)
                 recive_udp(self_addr)
     else:
         # TCP Connection
+        msg = "SUB:/debug"
         server_host, server_port, self_addr = regist_node(msg)
 
         # Make UDP send thread

@@ -8,10 +8,9 @@ H28 May 6
 
 from multiprocessing import Process, Queue
 import socket
-#from contextlib import closing
 import random
 
-from logprint import *
+import logprint
 
 
 class ThreadInfo(object):
@@ -46,7 +45,7 @@ class NodeInfo(object):
 def mediator_thread(threinfo, nodeque):
     """ Mediator Thread """
     try:
-        loginfo("[mediator_thread] Starting {} Topic on {} ...".format(
+        logprint.loginfo("[mediator_thread] Starting {} Topic on {} ...".format(
             threinfo.topic, threinfo.port))
         # Make subscriber node list
         sub_node_list = []
@@ -60,7 +59,7 @@ def mediator_thread(threinfo, nodeque):
         while True:
             # recive UDP
             b_recvdata, recvaddr = medi_sock.recvfrom(4096)
-            logdebug("[mediator_thread] RECV <  {}:{} : {}".format(
+            logprint.logdebug("[mediator_thread] RECV <  {}:{} : {}".format(
                 recvaddr[0], recvaddr[1], b_recvdata.decode()))
 
             # Check new subscriber node
@@ -68,12 +67,12 @@ def mediator_thread(threinfo, nodeque):
                 new_sub = nodeque.get_nowait()
                 sub_node_list.append(new_sub)
                 tmp = "{}:{}".format(new_sub.ipaddr, new_sub.port)
-                logdebug("[mediator_thread] NEW SUB:" + tmp)
+                logprint.logdebug("[mediator_thread] NEW SUB:" + tmp)
 
             # Send to each sub node
             for sub_node in sub_node_list:
                 medi_sock.sendto(b_recvdata, (sub_node.ipaddr, sub_node.port))
-                logdebug("[mediator_thread] SEND  > {}:{} : {}".format(
+                logprint.logdebug("[mediator_thread] SEND  > {}:{} : {}".format(
                     sub_node.ipaddr, sub_node.port, b_recvdata.decode()))
 
         medi_sock.close()

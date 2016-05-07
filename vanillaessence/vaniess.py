@@ -7,10 +7,9 @@ H28 May 4
 """
 
 import socket
-#from contextlib import closing
 
 import medthre
-from logprint import *
+import logprint
 
 
 def main():
@@ -31,10 +30,10 @@ def main():
     sock.bind((main_ip, main_port))
     sock.listen(10)
 
-    loginfo("[main] Waiting TCP connection on {}:{} ...".format(main_ip, main_port))
+    logprint.loginfo("[main] Waiting TCP connection on {}:{} ...".format(main_ip, main_port))
     # Main Loop
     while True:
-        logdebug("[main] Loop Start")
+        logprint.logdebug("[main] Loop Start")
 
         # Recive ControlData
         node_conn, node_addr = sock.accept()
@@ -44,9 +43,9 @@ def main():
         rcv_nodetype = ctrl_msg[0]
 
         # Return Thread Information
-        logdebug("[main] RCV REQUEST : {}".format(rcv_topic_name))
+        logprint.logdebug("[main] RCV REQUEST : {}".format(rcv_topic_name))
         if not rcv_topic_name in topic_list:
-            logdebug("New Topic")
+            logprint.logdebug("New Topic")
             topic_list[rcv_topic_name] = medthre.MediatorThread(rcv_topic_name)
             topic_list[rcv_topic_name].start()
         # Register Subscriber
@@ -61,8 +60,8 @@ def main():
 
 
 if __name__ == '__main__':
-    loginfo("***** Starting Vanilla Essence ... *****")
-    loginfo("Start Up Time : {}".format(startup_time))
+    logprint.loginfo("***** Starting Vanilla Essence ... *****")
+    logprint.loginfo("Start Up Time : {}".format(logprint.getstartup_time()))
     try:
         main()
     except KeyboardInterrupt:
