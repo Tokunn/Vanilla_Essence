@@ -15,8 +15,6 @@ import medthre
 def main():
     """ main function """
 
-    print("***** Starting Vanilla Essence ... *****\n")
-
     topic_list = {}
 
     # Make /debug Topic Thread
@@ -32,14 +30,15 @@ def main():
     sock.bind((main_ip, main_port))
     sock.listen(10)
 
+    print("[INFO] [main] Waiting TCP connection on {}:{} ...".format(main_ip, main_port))
     # Main Loop
     while True:
-        # Recive ControlData
-        print("[DEBUG] [main] Waiting TCP connection on {}:{} ...".format(main_ip, main_port))
-        node_conn, node_addr = sock.accept()
+        print("[DEBUG] [main] Loop Start")
 
-        ctrl_msg = node_conn.recv(bufsize).decode().split(':')
-        # Example: ctrl_msg = ['SUB', '/debug']
+        # Recive ControlData
+        node_conn, node_addr = sock.accept()
+        ctrl_msg = node_conn.recv(bufsize).decode()
+        ctrl_msg = ctrl_msg.split(':')  # Example: ctrl_msg = ['SUB', '/debug']
         rcv_topic_name = ctrl_msg[1]
         rcv_nodetype = ctrl_msg[0]
 
@@ -61,6 +60,7 @@ def main():
 
 
 if __name__ == '__main__':
+    print("[INFO] ***** Starting Vanilla Essence ... *****\n")
     try:
         main()
     except KeyboardInterrupt:

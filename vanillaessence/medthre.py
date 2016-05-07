@@ -8,7 +8,7 @@ H28 May 6
 
 from multiprocessing import Process, Queue
 import socket
-from contextlib import closing
+#from contextlib import closing
 import random
 
 
@@ -43,41 +43,43 @@ class NodeInfo(object):
 
 def mediator_thread(threinfo, nodeque):
     """ Mediator Thread """
-    print("[DEBUG] [mediator_thread] Starting {} Topic on {} ...".format(threinfo.topic, threinfo.port))
-    # Make subscriber node list
-    sub_node_list = []
+    try:
+        print("[INFO] [mediator_thread] Starting {} Topic on {} ...".format(
+            threinfo.topic, threinfo.port))
+        # Make subscriber node list
+        sub_node_list = []
 
-    # Make socket
-    medi_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        # Make socket
+        medi_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    medi_sock.bind((threinfo.ipaddr, threinfo.port))
+        medi_sock.bind((threinfo.ipaddr, threinfo.port))
 
-    # Mediator main loop
-    while True:
-        # recive UDP
-        b_recvdata, recvaddr = medi_sock.recvfrom(4096)
-        print("[DEBUG] [mediator_thread] RECV <  {}:{} : {}".format(
-            recvaddr[0], recvaddr[1], b_recvdata.decode()))
-
-        # Check new subscriber node
+        # Mediator main loop
         while True:
-            if nodeque.empty():
-                break
-            else:
-                new_sub = nodeque.get_nowait()
-                sub_node_list.append(new_sub)
-                tmp = "{}:{}".format(new_sub.ipaddr, new_sub.port)
-                print("[DEBUG] [mediator_thread] NEW SUB:" + tmp)
+            # recive UDP
+            b_recvdata, recvaddr = medi_sock.recvfrom(4096)
+            print("[DEBUG] [mediator_thread] RECV <  {}:{} : {}".format(
+                recvaddr[0], recvaddr[1], b_recvdata.decode()))
 
-        # Send to each sub node
-        for sub_node in sub_node_list:
-            # TODO send udp
-            medi_sock.sendto(b_recvdata, (sub_node.ipaddr, sub_node.port))
-            print("[DEBUG] [mediator_thread] SEND  > {}:{} : {}".format(
-                sub_node.ipaddr, sub_node.port, b_recvdata.decode()))
+            # Check new subscriber node
+            while True:
+                if nodeque.empty():
+                    break
+                else:
+                    new_sub = nodeque.get_nowait()
+                    sub_node_list.append(new_sub)
+                    tmp = "{}:{}".format(new_sub.ipaddr, new_sub.port)
+                    print("[DEBUG] [mediator_thread] NEW SUB:" + tmp)
 
-    medi_sock.close()
+            # Send to each sub node
+            for sub_node in sub_node_list:
+                medi_sock.sendto(b_recvdata, (sub_node.ipaddr, sub_node.port))
+                print("[DEBUG] [mediator_thread] SEND  > {}:{} : {}".format(
+                    sub_node.ipaddr, sub_node.port, b_recvdata.decode()))
 
+        medi_sock.close()
+    except KeyboardInterrupt:
+        pass
     return
 
 
