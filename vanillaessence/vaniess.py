@@ -7,7 +7,7 @@ H28 May 4
 """
 
 import socket
-from contextlib import closing
+#from contextlib import closing
 
 import medthre
 
@@ -15,7 +15,7 @@ import medthre
 def main():
     """ main function """
 
-    print("[DEBUG] [main] Starting Vanilla Essence ...")
+    print("***** Starting Vanilla Essence ... *****\n")
 
     topic_list = {}
 
@@ -38,21 +38,23 @@ def main():
         print("[DEBUG] [main] Waiting TCP connection on {}:{} ...".format(main_ip, main_port))
         node_conn, node_addr = sock.accept()
 
-        ctrl_msg = node_conn.recv(bufsize).decode()
+        ctrl_msg = node_conn.recv(bufsize).decode().split(':')
+        # Example: ctrl_msg = ['SUB', '/debug']
+        rcv_topic_name = ctrl_msg[1]
+        rcv_nodetype = ctrl_msg[0]
 
         # Return Thread Information
-        rcv_topic_name = ctrl_msg[4:]
         print("[DEBUG] [main] RCV REQUEST : {}".format(rcv_topic_name))
         if not rcv_topic_name in topic_list:
             print("New Topic")
             topic_list[rcv_topic_name] = medthre.MediatorThread(rcv_topic_name)
             topic_list[rcv_topic_name].start()
             # Register Subscriber
-        rcv_nodetype = ctrl_msg[:3]
         if rcv_nodetype == "SUB":
             topic_list[rcv_topic_name].set_sub(node_addr)
 
-        ret_msg = "RET:{}:{}".format(topic_list[rcv_topic_name].ipaddr, topic_list[rcv_topic_name].port)
+        tmp_thre = topic_list[rcv_topic_name]
+        ret_msg = "RET:{}:{}:{}".format(tmp_thre.topic, tmp_thre.ipaddr, tmp_thre.port)
         node_conn.send(ret_msg.encode())
         #conn.close()
     sock.close()

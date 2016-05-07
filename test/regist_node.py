@@ -22,8 +22,8 @@ def test_print(strings):
 
 def udp_send_thread(srv_host, srv_port):
     # UDP Connection
-    for i in range(5):
-        test_print(5-i)
+    for i in range(5, -1, -1):
+        test_print(i)
         time.sleep(0.5)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     test_print("Connect Thread Server")
@@ -41,15 +41,17 @@ def main():
     with closing(sock):
         sock.connect((host, port))
         self_addr = sock.getsockname()
+        test_print("OWN ADDR {}".format(self_addr))
         sock.send(msg.encode())
-        recv_msg = sock.recv(4096).decode()
+        recv_msg = sock.recv(4096).decode().split(':')
+        # Example: recv_msg = ['RET', '/debug', '127.0.0.1', '56432']
         test_print(recv_msg)
-    if recv_msg[:3] == "RET":
-        server_host = recv_msg[4:-6]
-        server_port = int(recv_msg[-5:])
+    if recv_msg[0] == "RET":
+        server_host = recv_msg[2]
+        server_port = int(recv_msg[3])
         test_print("{}:{}".format(server_host, server_port))
     else:
-        test_print("ERROR RET VALUE: " + recv_msg[:3])
+        test_print("ERROR RET VALUE: " + recv_msg[0])
         return
 
     # Make UDP send thread
@@ -61,9 +63,9 @@ def main():
     test_print("Listen UDP ...")
     with closing(sock):
         sock.bind(self_addr)
-        for i in range(5):
+        while True:
             recv_msg = sock.recv(4096).decode()
-            test_print("{} '{}'".format(i, recv_msg))
+            test_print(recv_msg)
 
 
 
