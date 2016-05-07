@@ -13,6 +13,9 @@ import time
 from contextlib import closing
 from multiprocessing import Process
 
+sys.path.append('../vanillaessence')
+import logprint
+
 host = "127.0.0.1"
 port = 11311
 
@@ -45,7 +48,10 @@ def regist_node():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     test_print("Connnect Main Server")
     with closing(sock):
-        sock.connect((host, port))
+        try:
+            sock.connect((host, port))
+        except ConnectionRefusedError:
+            sys.exit("\033[01m\033[91m[ERROR] Can't connect TCP Server\n[ERROR] TCP Server is not open\033[0m")
         self_addr = sock.getsockname()
         test_print("OWN ADDR {}".format(self_addr))
         sock.send(msg.encode())
@@ -77,7 +83,6 @@ def main():
 
     argv = sys.argv
     argc = len(argv)
-
 
     # TCP Connection
     server_host, server_port, self_addr = regist_node()
