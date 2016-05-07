@@ -62,14 +62,11 @@ def mediator_thread(threinfo, nodeque):
                 recvaddr[0], recvaddr[1], b_recvdata.decode()))
 
             # Check new subscriber node
-            while True:
-                if nodeque.empty():
-                    break
-                else:
-                    new_sub = nodeque.get_nowait()
-                    sub_node_list.append(new_sub)
-                    tmp = "{}:{}".format(new_sub.ipaddr, new_sub.port)
-                    print("[DEBUG] [mediator_thread] NEW SUB:" + tmp)
+            while not nodeque.empty():
+                new_sub = nodeque.get_nowait()
+                sub_node_list.append(new_sub)
+                tmp = "{}:{}".format(new_sub.ipaddr, new_sub.port)
+                print("[DEBUG] [mediator_thread] NEW SUB:" + tmp)
 
             # Send to each sub node
             for sub_node in sub_node_list:
