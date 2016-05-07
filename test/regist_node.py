@@ -82,21 +82,28 @@ def main():
     argv = sys.argv
     argc = len(argv)
 
+    topic_name = "/debug"
+
     if argc > 1:
         for opt in argv:
             if opt == '-h':
                 print("HELP  --- OPTION")
                 print("-p UDP Publisher")
                 print("-s UDP Subscriber")
+                print("-t Topic Name")
+                print("ex) ./regist_node.py -t -p -s /debug")
+            elif opt == '-t':
+                topic_name = argv[-1]
+                test_print("Set Topic Name :{}".format(topic_name))
             elif opt == '-p':
-                print("UDP Publisher")
-                msg = "PUB:/debug"
+                test_print("UDP Publisher")
+                msg = "PUB:{}".format(topic_name)
                 server_host, server_port, self_addr = regist_node(msg)
                 process = Process(target=udp_send_thread, args=(server_host, server_port,))
                 process.start()
             elif opt == '-s':
-                print("UDP Subscriber")
-                msg = "SUB:/debug"
+                test_print("UDP Subscriber")
+                msg = "SUB:{}".format(topic_name)
                 server_host, server_port, self_addr = regist_node(msg)
                 recive_udp(self_addr)
     else:
