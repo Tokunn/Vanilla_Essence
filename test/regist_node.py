@@ -7,6 +7,7 @@ Register Node to main
 H28 May 6
 """
 
+import sys
 import socket
 import time
 from contextlib import closing
@@ -17,11 +18,16 @@ port = 11311
 
 msg = "SUB:/debug"
 
+startup_time = time.time()
+
+def uptime():
+    return str(time.time() - startup_time)[:8]
+
 def test_print(strings):
-    print("[TEST] {}".format(strings))
+    print("[{}] [TEST] {}".format(uptime(), strings))
 
 def udp_send_thread(srv_host, srv_port):
-    # UDP Connection
+    """ UDP Publisher Thread """
     for i in range(5, -1, -1):
         test_print(i)
         time.sleep(0.5)
@@ -31,11 +37,9 @@ def udp_send_thread(srv_host, srv_port):
         for i in range(5):
             sock.sendto("test strings {}".format(i).encode(), (srv_host, srv_port))
 
-#----- main() -----#
-def main():
-    test_print("StartTesting ...")
 
-    # TCP Connection
+def regist_node():
+    """ Regist Node and Get Topic Addr """
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     test_print("Connnect Main Server")
     with closing(sock):
@@ -50,15 +54,13 @@ def main():
         server_host = recv_msg[2]
         server_port = int(recv_msg[3])
         test_print("{}:{}".format(server_host, server_port))
+        return server_host, server_port, self_addr
     else:
-        test_print("ERROR RET VALUE: " + recv_msg[0])
-        return
+        sys.exit("ERROR RET VALUE: " + recv_msg[0])
 
-    # Make UDP send thread
-    process = Process(target=udp_send_thread, args=(server_host, server_port,))
-    process.start()
 
-    # Wait UDP
+def recive_udp(self_addr):
+    """ UDP Subscriber """
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     test_print("Listen UDP ...")
     with closing(sock):
@@ -67,6 +69,23 @@ def main():
             recv_msg = sock.recv(4096).decode()
             test_print(recv_msg)
 
+
+def main():
+    test_print("StartTesting ...")
+
+    argv = sys.argv
+    argc = len(argv)
+
+
+    # TCP Connection
+    server_host, server_port, self_addr = regist_node()
+
+    # Make UDP send thread
+    process = Process(target=udp_send_thread, args=(server_host, server_port,))
+    process.start()
+
+    # Wait UDP
+    recive_udp(self_addr)
 
 
 if __name__ == '__main__':

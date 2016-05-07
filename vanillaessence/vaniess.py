@@ -10,6 +10,7 @@ import socket
 #from contextlib import closing
 
 import medthre
+from logprint import *
 
 
 def main():
@@ -30,10 +31,10 @@ def main():
     sock.bind((main_ip, main_port))
     sock.listen(10)
 
-    print("[INFO] [main] Waiting TCP connection on {}:{} ...".format(main_ip, main_port))
+    loginfo("[main] Waiting TCP connection on {}:{} ...".format(main_ip, main_port))
     # Main Loop
     while True:
-        print("[DEBUG] [main] Loop Start")
+        logdebug("[main] Loop Start")
 
         # Recive ControlData
         node_conn, node_addr = sock.accept()
@@ -43,12 +44,12 @@ def main():
         rcv_nodetype = ctrl_msg[0]
 
         # Return Thread Information
-        print("[DEBUG] [main] RCV REQUEST : {}".format(rcv_topic_name))
+        logdebug("[main] RCV REQUEST : {}".format(rcv_topic_name))
         if not rcv_topic_name in topic_list:
-            print("New Topic")
+            logdebug("New Topic")
             topic_list[rcv_topic_name] = medthre.MediatorThread(rcv_topic_name)
             topic_list[rcv_topic_name].start()
-            # Register Subscriber
+        # Register Subscriber
         if rcv_nodetype == "SUB":
             topic_list[rcv_topic_name].set_sub(node_addr)
 
@@ -60,7 +61,8 @@ def main():
 
 
 if __name__ == '__main__':
-    print("[INFO] ***** Starting Vanilla Essence ... *****\n")
+    loginfo("***** Starting Vanilla Essence ... *****")
+    loginfo("Start Up Time : {}".format(startup_time))
     try:
         main()
     except KeyboardInterrupt:
