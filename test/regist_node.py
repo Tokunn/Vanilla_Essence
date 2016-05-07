@@ -28,9 +28,11 @@ def test_print(strings):
 
 def udp_send_thread(srv_host, srv_port):
     """ UDP Publisher Thread """
-    for i in range(5, -1, -1):
-        test_print(i)
-        time.sleep(0.5)
+    print("")
+    for i in range(50, -1, -1):
+        print("\033[1m\033[1ACount : {}\033[0m ".format(i/10))
+        time.sleep(0.05)
+    print("\033[1A")
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     test_print("Connect Thread Server")
     with closing(sock):
