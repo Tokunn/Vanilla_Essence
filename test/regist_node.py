@@ -19,7 +19,7 @@ import logprint
 host = "127.0.0.1"
 port = 11311
 
-msg = "SUB:/debug"
+msg = "SUB:/sensor_value"
 
 startup_time = time.time()
 
@@ -43,7 +43,7 @@ def udp_send_thread(srv_host, srv_port):
             sock.sendto("test strings {}".format(i).encode(), (srv_host, srv_port))
 
 
-def regist_node():
+def regist_node(msg):
     """ Regist Node and Get Topic Addr """
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     test_print("Connnect Main Server")
@@ -84,15 +84,33 @@ def main():
     argv = sys.argv
     argc = len(argv)
 
-    # TCP Connection
-    server_host, server_port, self_addr = regist_node()
+    if argc > 1:
+        for opt in argv:
+            if (opt == '-h'):
+                print("HELP  --- OPTION")
+                print("-p UDP Publisher")
+                print("-s UDP Subscriber")
+            elif (opt == '-p'):
+                print("UDP Publisher")
+                msg = "PUB:/debug"
+                server_host, server_port, self_addr = regist_node(msg)
+                process = Process(target=udp_send_thread, args=(server_host, server_port,))
+                process.start()
+            elif (opt == '-s'):
+                print("UDP Subscriber")
+                msg = "SUB:/debug"
+                server_host, server_port, self_addr = regist_node(msg)
+                recive_udp(self_addr)
+    else:
+        # TCP Connection
+        server_host, server_port, self_addr = regist_node(msg)
 
-    # Make UDP send thread
-    process = Process(target=udp_send_thread, args=(server_host, server_port,))
-    process.start()
+        # Make UDP send thread
+        process = Process(target=udp_send_thread, args=(server_host, server_port,))
+        process.start()
 
-    # Wait UDP
-    recive_udp(self_addr)
+        # Wait UDP
+        recive_udp(self_addr)
 
 
 if __name__ == '__main__':
