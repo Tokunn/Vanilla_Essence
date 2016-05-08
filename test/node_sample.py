@@ -23,10 +23,11 @@ def main():
     """ main """
     debug_class = vaninode.VaniEssNode('/debug')
     debug_class.regist_subscriber()
-    #debug_class.regist_publisher()
+    debug_class.regist_publisher()
 
     sensor_class = vaninode.VaniEssNode('/sensor_value')
     sensor_class.regist_subscriber()
+    sensor_class.regist_publisher()
 
     print("")
     for i in range(20, -1, -1):
@@ -35,6 +36,7 @@ def main():
     print("\033[1A")
 
     debug_class.publish("Hello, world!")
+    sensor_class.publish("Hello, sensor!")
 
 
 if __name__ == '__main__':
