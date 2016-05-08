@@ -35,5 +35,5 @@ def logwarn(strings):
 
 def logerr(strings):
     """ Print Err """
-    log = "\033[91m[  ERR] [{}]: {}\033[0m".format(uptime(), strings)
+    log = "\033[01m\033[91m[  ERR] [{}]: {}\033[0m".format(uptime(), strings)
     print(log)
