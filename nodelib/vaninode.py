@@ -25,6 +25,7 @@ class VaniEssNode(object):
         self.topic = topic
         self.msg = Value(ctypes.c_char_p, "".encode())
         self.process = Process(target=self.sub_process)
+        self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.server_host = ""
         self.server_port = 0
         self.already_regist_pub = False
@@ -89,6 +90,4 @@ class VaniEssNode(object):
         """ Publish """
         if not self.already_regist_pub:
             logprint.logwarn("[publish] Call regist_publisher")
-        udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        udp_sock.sendto(msg.encode(), (self.server_host, self.server_port))
-        udp_sock.close()
+        self.udp_sock.sendto(msg.encode(), (self.server_host, self.server_port))
