@@ -24,7 +24,7 @@ class VaniEssNode(object):
     def __init__(self, topic):
         self.topic = topic
         self.msg = Value(ctypes.c_char_p, "".encode())
-        self.process = Process(target=self.sub_process)
+        self.process = Process(target=self.sub_process, args=(self.msg,))
         self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.server_host = ""
         self.server_port = 0
@@ -57,7 +57,7 @@ class VaniEssNode(object):
                 self.topic, self.server_host, self.server_port))
             return self_addr
 
-    def sub_process(self):
+    def sub_process(self, p_msg):
         """ Subscriber Process """
         # Get Server Addr
         ctrl_msg = "SUB:{}".format(self.topic)
@@ -69,9 +69,10 @@ class VaniEssNode(object):
         udp_sock.bind(self_addr)
         try:
             while True:
-                self.msg.value = udp_sock.recv(4096)
+                #self.msg.value = udp_sock.recv(4096)
+                p_msg = udp_sock.recv(4096)
                 logprint.logdebug("[sub_process] Recive UDP msg {}".format(
-                    self.msg.value.decode()))
+                    p_msg.decode()))
         except KeyboardInterrupt:
             pass
 
