@@ -86,6 +86,10 @@ class VaniEssNode(object):
         self.regist_node(ctrl_msg)
         self.already_regist_pub = True
 
+    def subscribe(self):
+        """ Subscribe """
+        return self.msg.value.decode()
+
     def publish(self, msg):
         """ Publish """
         if not self.already_regist_pub:
