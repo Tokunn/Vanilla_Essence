@@ -70,9 +70,9 @@ class VaniEssNode(object):
         try:
             while True:
                 #self.msg.value = udp_sock.recv(4096)
-                p_msg = udp_sock.recv(4096)
+                p_msg.value = udp_sock.recv(4096)
                 logprint.logdebug("[sub_process] Recive UDP msg {}".format(
-                    p_msg.decode()))
+                    p_msg.value.decode()))
         except KeyboardInterrupt:
             pass
 
