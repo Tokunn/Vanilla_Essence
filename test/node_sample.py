@@ -11,9 +11,9 @@ import os
 import sys
 import time
 
-#PATH = os.path.join(os.path.dirname(__file__), '../vanillaessence/')
-#sys.path.append(PATH)
-#import logprint
+PATH = os.path.join(os.path.dirname(__file__), '../vanillaessence/')
+sys.path.append(PATH)
+import logprint
 PATH = os.path.join(os.path.dirname(__file__), '../nodelib/')
 sys.path.append(PATH)
 import vaninode
@@ -37,6 +37,10 @@ def main():
 
     debug_class.publish("Hello, world!")
     sensor_class.publish("Hello, sensor!")
+
+    while True:
+        logprint.loginfo(sensor_class.subscribe())
+        time.sleep(1)
 
 
 if __name__ == '__main__':

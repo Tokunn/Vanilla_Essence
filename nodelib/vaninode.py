@@ -89,7 +89,7 @@ class VaniEssNode(object):
 
     def subscribe(self):
         """ Subscribe """
-        return self.msg.value.decode()
+        return self.msg.value
 
     def publish(self, msg):
         """ Publish """
